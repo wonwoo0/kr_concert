@@ -12,54 +12,71 @@
             background: #f0f8ff;
         }
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             margin: 0 auto;
             padding: 20px;
         }
-        .zh {
-            font-size: 36px;
-            color: #333;
-            margin-bottom: 20px;
+        .sentence {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 10px;
+        }
+        .text {
+            text-align: left;
+            flex-grow: 1;
         }
         .kr {
-            font-size: 24px;
+            font-size: 20px;
             color: #555;
-            margin: 10px 0;
+            margin-bottom: 5px;
+        }
+        .zh {
+            font-size: 16px;
+            color: #777;
         }
         .play-btn {
-            padding: 15px 40px;
-            font-size: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
             background: #007BFF;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px;
+            margin-left: 20px;
         }
         .play-btn:hover {
             background: #0056b3;
         }
-        .next-btn {
-            padding: 15px 40px;
-            font-size: 20px;
+        .pagination {
+            margin-top: 20px;
+        }
+        .pagination button {
+            padding: 10px 15px;
+            font-size: 16px;
             background: #28a745;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            margin: 10px;
+            margin: 0 5px;
         }
-        .next-btn:hover {
+        .pagination button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .pagination button:hover:not(:disabled) {
             background: #218838;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div id="zh-text" class="zh"></div>
-        <div id="kr-text" class="kr"></div>
-        <button class="play-btn" onclick="playCurrent()">播放音訊</button>
-        <button class="next-btn" onclick="showRandomSentence()">隨機下一句</button>
+        <h1>演唱會韓文跟讀機</h1>
+        <div id="sentences"></div>
+        <div class="pagination" id="pagination"></div>
     </div>
 
     <script>
@@ -166,30 +183,56 @@
             { kr: "방탄의 무대, 아미와 함께 영원히 기억될 거예요!", zh: "BTS 的舞台，與 ARMY 一起會永遠被記住！", audio: "audio/sentence_100.mp3" }
         ];
 
-        let currentSentence = null;
-        let currentAudio = null;
+        let currentPage = 1;
+        const itemsPerPage = 20;
+
+        function renderSentences(page) {
+            const container = document.getElementById("sentences");
+            container.innerHTML = "";
+            const start = (page - 1) * itemsPerPage;
+            const end = start + itemsPerPage;
+            const paginatedSentences = sentences.slice(start, end);
+
+            paginatedSentences.forEach(sentence => {
+                const div = document.createElement("div");
+                div.className = "sentence";
+                div.innerHTML = `
+                    <div class="text">
+                        <div class="kr">${sentence.kr}</div>
+                        <div class="zh">${sentence.zh}</div>
+                    </div>
+                    <button class="play-btn" onclick="playAudio('${sentence.audio}')">播放</button>
+                `;
+                container.appendChild(div);
+            });
+
+            renderPagination();
+        }
 
         function playAudio(url) {
-            if (currentAudio) currentAudio.pause(); // 停止前一個音訊
-            currentAudio = new Audio(url);
-            currentAudio.play().catch(error => console.log("播放失敗:", error));
+            const audio = new Audio(url);
+            audio.play().catch(error => console.log("播放失敗:", error));
         }
 
-        function showRandomSentence() {
-            const randomIndex = Math.floor(Math.random() * sentences.length);
-            currentSentence = sentences[randomIndex];
-            document.getElementById("zh-text").textContent = currentSentence.zh;
-            document.getElementById("kr-text").textContent = currentSentence.kr;
-        }
+        function renderPagination() {
+            const totalPages = Math.ceil(sentences.length / itemsPerPage);
+            const pagination = document.getElementById("pagination");
+            pagination.innerHTML = "";
 
-        function playCurrent() {
-            if (currentSentence) {
-                playAudio(currentSentence.audio); // 只使用正常速 MP3
+            for (let i = 1; i <= totalPages; i++) {
+                const button = document.createElement("button");
+                button.textContent = i;
+                button.disabled = i === currentPage;
+                button.onclick = () => {
+                    currentPage = i;
+                    renderSentences(currentPage);
+                };
+                pagination.appendChild(button);
             }
         }
 
-        // 頁面載入時顯示第一句
-        showRandomSentence();
+        // 頁面載入時顯示第一頁
+        renderSentences(currentPage);
     </script>
 </body>
 </html>
