@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>演唱會韓文跟讀機</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center;
+            background: #f0f8ff;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .zh {
+            font-size: 36px;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .kr {
+            font-size: 24px;
+            color: #555;
+            margin: 10px 0;
+        }
+        .play-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .play-btn:hover {
+            background: #0056b3;
+        }
+        .next-btn {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        .next-btn:hover {
+            background: #218838;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="zh-text" class="zh"></div>
+        <div id="kr-text" class="kr"></div>
+        <button class="play-btn" onclick="playCurrent()">播放音訊</button>
+        <button class="next-btn" onclick="showRandomSentence()">隨機下一句</button>
+    </div>
+
+    <script>
+        const sentences = [
+            { kr: "여러분, 정말 감사합니다! 오늘 이 순간을 함께해서 행복해요.", zh: "大家，真的很感謝！今天能與你們一起共度這一刻我感到很幸福。", audio: "audio/sentence_1.mp3" },
+            { kr: "카릿 여러분, 소리 질러 주세요! 에너지가 더 필요해요!", zh: "Carat 粉絲們，請大聲喊出來！我們需要更多能量！", audio: "audio/sentence_2.mp3" },
+            { kr: "세븐틴, 세븐틴! 함께 외쳐 보자!", zh: "SEVENTEEN, SEVENTEEN！一起大喊吧！", audio: "audio/sentence_3.mp3" },
+            { kr: "이 노래, 여러분과 함께 부르고 싶어요. 따라 부를 준비 되셨나요?", zh: "這首歌，我想與你們一起唱。準備好跟著唱了嗎？", audio: "audio/sentence_4.mp3" },
+            { kr: "정말 뜨거운 분위기네요! 더 열정적으로 뛰어 볼까요?", zh: "現場氣氛真的很熱烈！我們更熱情地跳起來吧？", audio: "audio/sentence_5.mp3" },
+            { kr: "우리 카릿, 사랑합니다! 오늘 밤 잊지 못할 추억 만들자!", zh: "我們的 Carat，愛你們！今晚讓我們創造難忘的回憶！", audio: "audio/sentence_6.mp3" },
+            { kr: "모두 함께 손을 흔들어 보세요! 이 순간을 즐기자!", zh: "大家一起揮動雙手吧！讓我們享受這一刻！", audio: "audio/sentence_7.mp3" },
+            { kr: "이 곡은 우리 데뷔 때부터 사랑받은 곡이에요. 함께 불러주세요!", zh: "這首歌從我們出道時就深受喜愛。請一起唱吧！", audio: "audio/sentence_8.mp3" },
+            { kr: "세븐틴의 에너지를 모두 받아주세요! 준비됐죠?", zh: "請接收 SEVENTEEN 的能量！準備好了嗎？", audio: "audio/sentence_9.mp3" },
+            { kr: "여러분, 이 순간을 영원히 기억할게요. 사랑해요!", zh: "大家，這一刻我會永遠記住。愛你們！", audio: "audio/sentence_10.mp3" },
+            { kr: "모두 함께 점프! 하나, 둘, 셋!", zh: "大家一起跳！一、二、三！", audio: "audio/sentence_11.mp3" },
+            { kr: "카릿, 우리 함께 노래 부르고 춤추자!", zh: "Carat，我們一起唱歌跳舞吧！", audio: "audio/sentence_12.mp3" },
+            { kr: "이 공연, 여러분 덕분에 더 특별해졌어요. 감사해요!", zh: "這場演出因為你們而變得更特別。謝謝你們！", audio: "audio/sentence_13.mp3" },
+            { kr: "세븐틴과 카릿, 오늘 밤 하나가 됐어요!", zh: "SEVENTEEN 與 Carat，今晚成為一體了！", audio: "audio/sentence_14.mp3" },
+            { kr: "여러분의 환호가 정말 최고예요! 더 크게 외쳐주세요!", zh: "你們的歡呼聲真的最棒！請更大聲地喊出來！", audio: "audio/sentence_15.mp3" },
+            { kr: "이 노래로 함께 추억 만들자! 따라와요!", zh: "讓我們用這首歌一起創造回憶！跟著來！", audio: "audio/sentence_16.mp3" },
+            { kr: "우리 카릿, 정말 사랑스럽네요. 이 순간을 즐기자!", zh: "我們的 Carat，真可愛。我們享受這一刻吧！", audio: "audio/sentence_17.mp3" },
+            { kr: "세븐틴의 무대, 여러분과 함께 빛나요!", zh: "SEVENTEEN 的舞台，因你們而閃耀！", audio: "audio/sentence_18.mp3" },
+            { kr: "모두 함께 박수 쳐! 이 에너지가 필요해요!", zh: "大家一起拍手！我們需要這份能量！", audio: "audio/sentence_19.mp3" },
+            { kr: "이 곡은 우리 팬 여러분을 위한 곡이에요. 들어주세요!", zh: "這首歌是為我們的粉絲創作的。請聽吧！", audio: "audio/sentence_20.mp3" },
+            { kr: "카릿, 우리 함께 웃으며 이 밤을 보내요!", zh: "Carat，我們一起笑著度過今晚吧！", audio: "audio/sentence_21.mp3" },
+            { kr: "세븐틴과 함께라면, 어떤 무대든 완벽해요!", zh: "如果有 SEVENTEEN 在，任何舞台都完美！", audio: "audio/sentence_22.mp3" },
+            { kr: "여러분, 정말 열정적인 모습에 감동했어요. 사랑해요!", zh: "大家，你們那熱情的樣子讓我感動。愛你們！", audio: "audio/sentence_23.mp3" },
+            { kr: "이 순간, 우리 모두 하나가 됐어요. 감사합니다!", zh: "這一刻，我們都成為一體了。謝謝你們！", audio: "audio/sentence_24.mp3" },
+            { kr: "세븐틴의 에너지를 느껴보세요! 모두 뛰어!", zh: "感受 SEVENTEEN 的能量吧！大家跳起來！", audio: "audio/sentence_25.mp3" },
+            { kr: "카릿, 우리 함께 이 노래로 행복해지자!", zh: "Carat，讓我們用這首歌一起快樂吧！", audio: "audio/sentence_26.mp3" },
+            { kr: "이 무대는 여러분을 위한 거예요. 즐겨주세요!", zh: "這個舞台是為你們準備的。請盡情享受！", audio: "audio/sentence_27.mp3" },
+            { kr: "세븐틴, 카릿과 함께라면 무서울 게 없어요!", zh: "如果有 SEVENTEEN 與 Carat 在，就無所畏懼！", audio: "audio/sentence_28.mp3" },
+            { kr: "여러분의 응원이 우리 힘의 원천이에요. 감사해요!", zh: "你們的鼓勵是我們力量的源泉。謝謝你們！", audio: "audio/sentence_29.mp3" },
+            { kr: "모두 함께 소리 질러! 이 순간을 기억하자!", zh: "大家一起大喊吧！讓我們記住這一刻！", audio: "audio/sentence_30.mp3" },
+            { kr: "카릿, 세븐틴과 함께 춤춰요! 준비됐죠?", zh: "Carat，與 SEVENTEEN 一起跳舞！準備好了嗎？", audio: "audio/sentence_31.mp3" },
+            { kr: "이 공연, 여러분의 에너지로 완성됐어요. 사랑합니다!", zh: "這場演出因為你們的能量而完成。我愛你們！", audio: "audio/sentence_32.mp3" },
+            { kr: "세븐틴의 무대, 여러분과 함께 더 빛나요!", zh: "SEVENTEEN 的舞台，與你們一起更閃耀！", audio: "audio/sentence_33.mp3" },
+            { kr: "우리 카릿, 이 노래로 함께 열정을 불태워요!", zh: "我們的 Carat，用這首歌一起燃燒熱情吧！", audio: "audio/sentence_34.mp3" },
+            { kr: "여러분, 정말 감사합니다. 이 순간이 영원했으면 좋겠어요!", zh: "大家，真心感謝。如果這一刻能永遠就好了！", audio: "audio/sentence_35.mp3" },
+            { kr: "세븐틴과 카릿, 오늘 밤 최고의 순간을 만들자!", zh: "SEVENTEEN 與 Carat，今晚創造最棒的瞬間吧！", audio: "audio/sentence_36.mp3" },
+            { kr: "이 곡은 우리 팬 여러분과 함께 부를 수 있는 곡이에요!", zh: "這首歌是可以與我們的粉絲一起唱的！", audio: "audio/sentence_37.mp3" },
+            { kr: "카릿, 우리 함께 손을 흔들며 노래해요!", zh: "Carat，我們一起揮手唱歌吧！", audio: "audio/sentence_38.mp3" },
+            { kr: "세븐틴의 에너지를 느껴보세요! 모두 함께 점프!", zh: "感受 SEVENTEEN 的能量吧！大家一起跳！", audio: "audio/sentence_39.mp3" },
+            { kr: "여러분, 이 무대를 위해 준비했어요. 즐겨주세요!", zh: "大家，為了這個舞台我們準備了很多。請享受吧！", audio: "audio/sentence_40.mp3" },
+            { kr: "카릿, 우리 사랑과 열정을 공유해요!", zh: "Carat，讓我們分享愛和熱情吧！", audio: "audio/sentence_41.mp3" },
+            { kr: "세븐틴과 함께라면, 어떤 순간도 특별해요!", zh: "如果有 SEVENTEEN 在，任何時刻都特別！", audio: "audio/sentence_42.mp3" },
+            { kr: "여러분, 정말 감사합니다. 이 순간을 잊지 않겠습니다!", zh: "大家，真心感謝。我不會忘記這一刻！", audio: "audio/sentence_43.mp3" },
+            { kr: "이 노래로 우리 모두 행복해지자! 따라 부르세요!", zh: "讓我們用這首歌一起快樂吧！跟著唱！", audio: "audio/sentence_44.mp3" },
+            { kr: "카릿, 세븐틴과 함께 이 밤을 뜨겁게 만들어요!", zh: "Carat，與 SEVENTEEN 一起讓今晚熱烈吧！", audio: "audio/sentence_45.mp3" },
+            { kr: "여러분의 환호가 우리를 더 강하게 만들어요!", zh: "你們的歡呼聲讓我們更堅強！", audio: "audio/sentence_46.mp3" },
+            { kr: "세븐틴과 카릿, 이 무대를 끝까지 즐기자!", zh: "SEVENTEEN 與 Carat，讓我們享受這個舞台到最後！", audio: "audio/sentence_47.mp3" },
+            { kr: "이 순간, 우리 모두 하나가 됐어요. 사랑해요!", zh: "這一刻，我們都成為一體了。愛你們！", audio: "audio/sentence_48.mp3" },
+            { kr: "카릿, 우리 함께 이 노래로 에너지를 쏟아내요!", zh: "Carat，讓我們用這首歌釋放能量吧！", audio: "audio/sentence_49.mp3" },
+            { kr: "세븐틴의 무대, 여러분과 함께 영원히 기억될 거예요!", zh: "SEVENTEEN 的舞台，與你們一起會永遠被記住！", audio: "audio/sentence_50.mp3" },
+            { kr: "아미 여러분, 정말 감사합니다! 이 순간을 함께해서 행복해요.", zh: "ARMY 粉絲們，真的很感謝！能與你們一起共度這一刻我感到很幸福。", audio: "audio/sentence_51.mp3" },
+            { kr: "소리 질러, 아미! 이 에너지가 필요해요!", zh: "大聲喊吧，ARMY！我們需要這份能量！", audio: "audio/sentence_52.mp3" },
+            { kr: "방탄소년단, 방탄소년단! 함께 외쳐 보자!", zh: "BTS, BTS！一起大喊吧！", audio: "audio/sentence_53.mp3" },
+            { kr: "이 노래, 아미와 함께 부르고 싶어요. 준비됐죠?", zh: "這首歌，我想與 ARMY 一起唱。準備好了嗎？", audio: "audio/sentence_54.mp3" },
+            { kr: "정말 뜨거운 공연장이네요! 더 열정적으로 뛰어 볼까요?", zh: "現場真的很熱烈！我們更熱情地跳起來吧？", audio: "audio/sentence_55.mp3" },
+            { kr: "우리 아미, 사랑합니다! 오늘 밤 잊지 못할 순간 만들자!", zh: "我們的 ARMY，愛你們！今晚讓我們創造難忘的瞬間！", audio: "audio/sentence_56.mp3" },
+            { kr: "모두 함께 손을 흔들어 보세요! 이 순간을 즐기자!", zh: "大家一起揮動雙手吧！讓我們享受這一刻！", audio: "audio/sentence_57.mp3" },
+            { kr: "이 곡은 데뷔 때부터 아미와 함께한 곡이에요. 함께 불러주세요!", zh: "這首歌從我們出道時就與 ARMY 一起共創。請一起唱吧！", audio: "audio/sentence_58.mp3" },
+            { kr: "방탄의 에너지를 모두 받아주세요! 준비됐죠?", zh: "請接收 BTS 的能量！準備好了嗎？", audio: "audio/sentence_59.mp3" },
+            { kr: "아미, 이 순간을 영원히 기억할게요. 사랑해요!", zh: "ARMY，這一刻我會永遠記住。愛你們！", audio: "audio/sentence_60.mp3" },
+            { kr: "모두 함께 점프! 하나, 둘, 셋!", zh: "大家一起跳！一、二、三！", audio: "audio/sentence_61.mp3" },
+            { kr: "아미, 우리 함께 노래 부르고 춤추자!", zh: "ARMY，我們一起唱歌跳舞吧！", audio: "audio/sentence_62.mp3" },
+            { kr: "이 공연, 아미 덕분에 더 특별해졌어요. 감사해요!", zh: "這場演出因為 ARMY 而變得更特別。謝謝你們！", audio: "audio/sentence_63.mp3" },
+            { kr: "방탄과 아미, 오늘 밤 하나가 됐어요!", zh: "BTS 與 ARMY，今晚成為一體了！", audio: "audio/sentence_64.mp3" },
+            { kr: "아미의 환호가 정말 최고예요! 더 크게 외쳐주세요!", zh: "ARMY 的歡呼聲真的最棒！請更大聲地喊出來！", audio: "audio/sentence_65.mp3" },
+            { kr: "이 노래로 함께 추억 만들자! 따라와요!", zh: "讓我們用這首歌一起創造回憶！跟著來！", audio: "audio/sentence_66.mp3" },
+            { kr: "우리 아미, 정말 사랑스럽네요. 이 순간을 즐기자!", zh: "我們的 ARMY，真可愛。我們享受這一刻吧！", audio: "audio/sentence_67.mp3" },
+            { kr: "방탄의 무대, 아미와 함께 빛나요!", zh: "BTS 的舞台，因 ARMY 而閃耀！", audio: "audio/sentence_68.mp3" },
+            { kr: "모두 함께 박수 쳐! 이 에너지가 필요해요!", zh: "大家一起拍手！我們需要這份能量！", audio: "audio/sentence_69.mp3" },
+            { kr: "이 곡은 우리 아미를 위한 곡이에요. 들어주세요!", zh: "這首歌是為我們的 ARMY 創作的。請聽吧！", audio: "audio/sentence_70.mp3" },
+            { kr: "아미, 우리 함께 웃으며 이 밤을 보내요!", zh: "ARMY，我們一起笑著度過今晚吧！", audio: "audio/sentence_71.mp3" },
+            { kr: "방탄과 함께라면, 어떤 무대든 완벽해요!", zh: "如果有 BTS 在，任何舞台都完美！", audio: "audio/sentence_72.mp3" },
+            { kr: "아미, 정말 열정적인 모습에 감동했어요. 사랑해요!", zh: "ARMY，你們那熱情的樣子讓我感動。愛你們！", audio: "audio/sentence_73.mp3" },
+            { kr: "이 순간, 우리 모두 하나가 됐어요. 감사합니다!", zh: "這一刻，我們都成為一體了。謝謝你們！", audio: "audio/sentence_74.mp3" },
+            { kr: "방탄의 에너지를 느껴보세요! 모두 뛰어!", zh: "感受 BTS 的能量吧！大家跳起來！", audio: "audio/sentence_75.mp3" },
+            { kr: "아미, 우리 함께 이 노래로 행복해지자!", zh: "ARMY，讓我們用這首歌一起快樂吧！", audio: "audio/sentence_76.mp3" },
+            { kr: "이 무대는 아미를 위한 거예요. 즐겨주세요!", zh: "這個舞台是為 ARMY 準備的。請盡情享受！", audio: "audio/sentence_77.mp3" },
+            { kr: "방탄과 아미, 함께라면 무서울 게 없어요!", zh: "如果有 BTS 與 ARMY 在，就無所畏懼！", audio: "audio/sentence_78.mp3" },
+            { kr: "아미의 응원이 우리 힘의 원천이에요. 감사해요!", zh: "ARMY 的鼓勵是我們力量的源泉。謝謝你們！", audio: "audio/sentence_79.mp3" },
+            { kr: "모두 함께 소리 질러! 이 순간을 기억하자!", zh: "大家一起大喊吧！讓我們記住這一刻！", audio: "audio/sentence_80.mp3" },
+            { kr: "아미, 방탄과 함께 춤춰요! 준비됐죠?", zh: "ARMY，與 BTS 一起跳舞！準備好了嗎？", audio: "audio/sentence_81.mp3" },
+            { kr: "이 공연, 아미의 에너지로 완성됐어요. 사랑합니다!", zh: "這場演出因為 ARMY 的能量而完成。我愛你們！", audio: "audio/sentence_82.mp3" },
+            { kr: "방탄의 무대, 아미와 함께 더 빛나요!", zh: "BTS 的舞台，與 ARMY 一起更閃耀！", audio: "audio/sentence_83.mp3" },
+            { kr: "우리 아미, 이 노래로 함께 열정을 불태워요!", zh: "我們的 ARMY，用這首歌一起燃燒熱情吧！", audio: "audio/sentence_84.mp3" },
+            { kr: "아미, 정말 감사합니다. 이 순간이 영원했으면 좋겠어요!", zh: "ARMY，真心感謝。如果這一刻能永遠就好了！", audio: "audio/sentence_85.mp3" },
+            { kr: "방탄과 아미, 오늘 밤 최고의 순간을 만들자!", zh: "BTS 與 ARMY，今晚創造最棒的瞬間吧！", audio: "audio/sentence_86.mp3" },
+            { kr: "이 곡은 우리 아미와 함께 부를 수 있는 곡이에요!", zh: "這首歌是可以與我們的 ARMY 一起唱的！", audio: "audio/sentence_87.mp3" },
+            { kr: "아미, 우리 함께 손을 흔들며 노래해요!", zh: "ARMY，我們一起揮手唱歌吧！", audio: "audio/sentence_88.mp3" },
+            { kr: "방탄의 에너지를 느껴보세요! 모두 함께 점프!", zh: "感受 BTS 的能量吧！大家一起跳！", audio: "audio/sentence_89.mp3" },
+            { kr: "아미, 이 무대를 위해 준비했어요. 즐겨주세요!", zh: "ARMY，為了這個舞台我們準備了很多。請享受吧！", audio: "audio/sentence_90.mp3" },
+            { kr: "아미, 우리 사랑과 열정을 공유해요!", zh: "ARMY，讓我們分享愛和熱情吧！", audio: "audio/sentence_91.mp3" },
+            { kr: "방탄과 함께라면, 어떤 순간도 특별해요!", zh: "如果有 BTS 在，任何時刻都特別！", audio: "audio/sentence_92.mp3" },
+            { kr: "아미, 정말 감사합니다. 이 순간을 잊지 않겠습니다!", zh: "ARMY，真心感謝。我不會忘記這一刻！", audio: "audio/sentence_93.mp3" },
+            { kr: "이 노래로 우리 모두 행복해지자! 따라 부르세요!", zh: "讓我們用這首歌一起快樂吧！跟著唱！", audio: "audio/sentence_94.mp3" },
+            { kr: "아미, 방탄과 함께 이 밤을 뜨겁게 만들어요!", zh: "ARMY，與 BTS 一起讓今晚熱烈吧！", audio: "audio/sentence_95.mp3" },
+            { kr: "아미의 환호가 우리를 더 강하게 만들어요!", zh: "ARMY 的歡呼聲讓我們更堅強！", audio: "audio/sentence_96.mp3" },
+            { kr: "방탄과 아미, 이 무대를 끝까지 즐기자!", zh: "BTS 與 ARMY，讓我們享受這個舞台到最後！", audio: "audio/sentence_97.mp3" },
+            { kr: "이 순간, 우리 모두 하나가 됐어요. 사랑해요!", zh: "這一刻，我們都成為一體了。愛你們！", audio: "audio/sentence_98.mp3" },
+            { kr: "아미, 우리 함께 이 노래로 에너지를 쏟아내요!", zh: "ARMY，讓我們用這首歌釋放能量吧！", audio: "audio/sentence_99.mp3" },
+            { kr: "방탄의 무대, 아미와 함께 영원히 기억될 거예요!", zh: "BTS 的舞台，與 ARMY 一起會永遠被記住！", audio: "audio/sentence_100.mp3" }
+        ];
+
+        let currentSentence = null;
+        let currentAudio = null;
+
+        function playAudio(url) {
+            if (currentAudio) currentAudio.pause(); // 停止前一個音訊
+            currentAudio = new Audio(url);
+            currentAudio.play().catch(error => console.log("播放失敗:", error));
+        }
+
+        function showRandomSentence() {
+            const randomIndex = Math.floor(Math.random() * sentences.length);
+            currentSentence = sentences[randomIndex];
+            document.getElementById("zh-text").textContent = currentSentence.zh;
+            document.getElementById("kr-text").textContent = currentSentence.kr;
+        }
+
+        function playCurrent() {
+            if (currentSentence) {
+                playAudio(currentSentence.audio); // 只使用正常速 MP3
+            }
+        }
+
+        // 頁面載入時顯示第一句
+        showRandomSentence();
+    </script>
+</body>
+</html>
